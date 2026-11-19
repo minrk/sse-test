@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>Title</title>
+  </head>
+  <body>
+    <ul id="events">
+    </ul>
+  </body>
+  <script>
+      const evtSource = new EventSource("/sse/events" + window.location.search);
+      const eventLog = document.getElementById("events");
+
+      evtSource.onmessage = function(e) {
+        const evt = JSON.parse(e.data);
+        console.log(evt);
+
+        const msg = document.createElement("li");
+        msg.innerText = evt.i.toString();
+        eventLog.appendChild(msg);
+      };
+
+      evtSource.onerror = function(e) {
+        const msg = document.createElement("li");
+        msg.innerText = "error";
+        eventLog.appendChild(msg);
+      };
+  </script>
+</html>

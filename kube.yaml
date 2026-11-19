@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sse-test
+  labels:
+    app: sse-test
+spec:
+  containers:
+    - name: sse
+      image: ghcr.io/minrk/sse
+      imagePullPolicy: Always
+
+      ports:
+        - containerPort: 8888
+          name: http
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: sse-test
+  name: sse-test
+spec:
+  ports:
+  - name: http
+    port: 8888
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: sse-test
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sse-test
+spec:
+  hostnames:
+  - biojupyter-staging.bids.berkeley.edu
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: default
+    namespace: support
+  rules:
+  - backendRefs:
+    - kind: Service
+      name: sse-test
+      port: 8888
+    timeouts:
+      request: 0s
+    matches:
+    - path:
+        type: PathPrefix
+        value: /sse/
